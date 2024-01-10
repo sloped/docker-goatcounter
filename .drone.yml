@@ -1,0 +1,31 @@
+kind: pipeline
+type: docker
+name: default
+
+steps:
+- name: build-on-push
+  image: plugins/docker
+  settings:
+    username:
+      from_secret: USERNAME
+    password:
+      from_secret: PASSWORD
+    repo: sloped/goatcounter
+    tags: 
+      - ${DRONE_COMMIT_SHA:0:7}
+      - latest
+  when:
+    event:
+      - push
+- name: build
+  image: plugins/docker
+  settings:
+    username:
+      from_secret: USERNAME
+    password:
+      from_secret: PASSWORD
+    auto_tag: true
+    repo: sloped/goatcounter
+  when:
+    event: 
+      - tag
