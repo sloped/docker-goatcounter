@@ -1,64 +1,109 @@
-# baethon/goatcounter
+# Goatcounter Docker Image
 
-Unofficial Docker image for [goatcounter](https://github.com/zgoat/goatcounter) - simple web statistics
+This is an unofficial Docker Image for running Goatcounter.
+
+This was based on https://github.com/baethon/docker-goatcounter. 
+
+Please note that Goatcounter's author does not recommend running Goatcounter this way. I am running it successfully, but your mileage may vary. 
 
 ## How to use this image
 
+### Docker Run
+
 ```bash
 docker run --name goatcounter \
+  -v ${pwd}/config:/conf
   -e GOATCOUNTER_DOMAIN=stats.domain.com \
   -e GOATCOUNTER_EMAIL=admin@domain.com \
-  baethon/goatcounter
+  sloped/goatcounter
 ```
 
-This command will start a single instance with pre-configured `stats.domain.com` site.
+This command will start a single instance with pre-configured `stats.domain.com` site. It will store the database under your current directory under `/config` in a sqlite database `goatcounter.sqlite3`. 
 
-`GOATCOUNTER_DOMAIN` and `GOATCOUNTER_EMAIL` are mandatory.
+### Docker Compose
+
+```
+version: '3.3'
+
+services:
+  goatcounter:
+    image: sloped/goatcounter
+    container_name: goatcounter
+    volumes:
+      - ${pwd}/config:/conf
+    environment:
+      - GOATCOUNTER_DOMAIN=stats.domain.com
+      - GOATCOUNTER_EMAIL=admin@domain.com
+```
+#### With Postgres
+
+Note: I do not run this so you will need to figure out the connection string. If you do please send me a PR. 
+```
+version: '3.3'
+
+services:
+  goatcounter:
+    image: sloped/goatcounter
+    container_name: goatcounter
+    volumes:
+      - ${pwd}/config:/conf
+    environment:
+      - GOATCOUNTER_DOMAIN=stats.domain.com
+      - GOATCOUNTER_EMAIL=admin@domain.com
+      - GOATCOUNTER_DB=connectionString'
+    depends_on:
+      - db
+
+  db:
+    image: postgres
+    container_name: goatcounter_db
+    environment:
+      POSTGRES_DB: goatcounter_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - ${pwd}/db_data:/var/lib/postgresql/data
+
+```
 
 ## Environment Variables
 
-### `GOATCOUNTER_DOMAIN`
+### GOATCOUNTER_DOMAIN
 
-This mandatory environment variable is used to create the initial site.
+Used to create the initial site. Default: localhost
 
-### `GOATCOUNTER_EMAIL`
+Highly recommend you change this. 
 
-This mandatory environment variable defines the e-mail address of the admin user.  
+### GOATCOUNTER_EMAIL
 
-It's used to create the initial site and is passed as an `-auth` option to the `serve` command.
+Defines the e-mail address of the admin user. Default: goatcounter@localhost
 
-### `GOATCOUNTER_PASSWORD`
+Highly recommend you change this. 
 
-_Available since v1.4_.
+### GOATCOUNTER_PASSWORD
 
-This mandatory environment variable defines the password of the admin user.
+Defines the password for the admin user. 
 
-### `GOATCOUNTER_SMTP`
+Please change this or change your password in /user/auth immediatly after logging in
 
-This optional environment variable defines the SMTP server (e.g., `smtp://user:pass@server.com:587`) which will be used by the server. 
+### GOATCOUNTER_SMTP
 
-_Default:_ `stdout` - print email contents to stdout
+This optional environment variable defines the SMTP server (e.g., smtp://user:pass@server.com:587) which will be used by the server.
 
-### `GOATCOUNTER_DB`
+Default: stdout - print email contents to stdout
 
-This optional environment variable defines the location of the database. By default, the server will use SQLite database which is recommended solution. 
+### GOATCOUNTER_DB
 
-It's possible to use the Postgres DB however, the image was not tested against it.  
+This optional environment variable defines the location of the database. By default, the server will use SQLite database which is recommended solution.
 
-Don't change this value unless you know what you're doing.
+It's possible to use the Postgres DB however, the image was not tested against it.
 
-_Default:_ `sqlite:///goatcounter/db/goatconter.sqlite3`
+For persistent data be sure to add /conf as a volume. 
 
-## Troubleshooting
+Default: sqlite:///conf/goatconter.sqlite3
 
-### The server displays migration info
+## CLI
 
-During startup, the container will try to execute all available migrations. What you see, is the output of `goatcounter migrate` command.
+Assuming you stuck with the goatcounter name noted above. 
 
-### line X: GOATCOUNTER_*: unbound variable
-
-You forgot to set one of the mandatory env variables.
-
-### zdb.TX fn: cname: already exists.
-
-The entrypoint script tries to create the initial site on every container startup. Once it's created, the `goatcounter create` command will report this error. It's safe to ignore it.
+`docker exec goatcounter {cmd}` or `docker-compose exec goatcounter goatcounter`
