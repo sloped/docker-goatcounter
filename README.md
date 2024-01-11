@@ -1,10 +1,14 @@
-# Goatcounter Docker Image
+# Goatcounter Docker Image  
+[![Build Status](https://drone.connermccall.com/api/badges/conner/docker-goatcounter/status.svg)](https://drone.connermccall.com/conner/docker-goatcounter)
 
-This is an unofficial Docker Image for running Goatcounter.
+This is an unofficial Docker Image for running [Goatcounter](https://www.goatcounter.com/).
 
 This was based on https://github.com/baethon/docker-goatcounter. 
 
-Please note that Goatcounter's author does not recommend running Goatcounter this way. I am running it successfully, but your mileage may vary. 
+### Note
+Goatcounter's author does [not recommend running](https://github.com/arp242/goatcounter#deploy-scripts-and-such) Goatcounter this way.
+
+I see multiple advantages to using Docker even if it is not strictly necessary. But please be sure to keep the author's thinking in mind if you report issues to the Goatcounter repository. 
 
 ## How to use this image
 
@@ -12,13 +16,13 @@ Please note that Goatcounter's author does not recommend running Goatcounter thi
 
 ```bash
 docker run --name goatcounter \
-  -v ${pwd}/config:/conf
+  -v ${pwd}/config:/conf/
   -e GOATCOUNTER_DOMAIN=stats.domain.com \
   -e GOATCOUNTER_EMAIL=admin@domain.com \
   sloped/goatcounter
 ```
 
-This command will start a single instance with pre-configured `stats.domain.com` site. It will store the database under your current directory under `/config` in a sqlite database `goatcounter.sqlite3`. 
+This command will start a single instance with a pre-configured `stats.domain.com` site. It will store the database under your current directory under `/config` in an SQLite database `goatcounter`.sqlite3`. 
 
 ### Docker Compose
 
@@ -84,26 +88,32 @@ Highly recommend you change this.
 
 Defines the password for the admin user. 
 
-Please change this or change your password in /user/auth immediatly after logging in
+Please change this or change your password in /user/auth immediately after logging in
 
 ### GOATCOUNTER_SMTP
 
-This optional environment variable defines the SMTP server (e.g., smtp://user:pass@server.com:587) which will be used by the server.
+This optional environment variable defines the SMTP server (e.g., smtp://user:pass@server.com:587) that will be used by the server.
 
 Default: stdout - print email contents to stdout
 
 ### GOATCOUNTER_DB
 
-This optional environment variable defines the location of the database. By default, the server will use SQLite database which is recommended solution.
+This optional environment variable defines the location of the database. By default, the server will use a SQLite database. I would recommend sticking with that. 
 
 It's possible to use the Postgres DB however, the image was not tested against it.
 
 For persistent data be sure to add /conf as a volume. 
 
-Default: sqlite:///conf/goatconter.sqlite3
+Default: sqlite:///conf/goatcounter.sqlite3
 
 ## CLI
 
 Assuming you stuck with the goatcounter name noted above. 
 
-`docker exec goatcounter {cmd}` or `docker-compose exec goatcounter goatcounter`
+### Docker Run
+
+`docker exec goatcounter {cmd}` 
+
+### Compose
+
+`docker-compose exec goatcounter goatcounter`
